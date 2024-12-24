@@ -17,26 +17,20 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
   const [category, setCategory] = useState("");
   const [type, setType] = useState<TransactionType>("expense");
   const [status, setStatus] = useState<TransactionStatus>("pending");
+  const [expenses, setExpenses] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const transaction = {
+    onAddTransaction({
       description,
       amount: Number(amount),
       date,
+      dueDate: dueDate || null,
       category,
       type,
       status,
-    } as Omit<Transaction, 'id'>;
-
-    // Adiciona o prazo final apenas se for despesa ou dívida e tiver sido preenchido
-    if ((type === 'expense' || type === 'debt') && dueDate) {
-      transaction.dueDate = dueDate;
-    }
-
-    onAddTransaction(transaction);
-    
-    // Limpa o formulário
+      expenses: expenses ? Number(expenses) : 0,
+    });
     setDescription("");
     setAmount("");
     setDate("");
@@ -44,6 +38,7 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
     setCategory("");
     setType("expense");
     setStatus("pending");
+    setExpenses("");
   };
 
   return (
@@ -70,6 +65,17 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
           />
         </div>
         <div className="space-y-2">
+          <Label htmlFor="expenses">Despesas Adicionais</Label>
+          <Input
+            id="expenses"
+            type="number"
+            step="0.01"
+            value={expenses}
+            onChange={(e) => setExpenses(e.target.value)}
+            placeholder="Opcional"
+          />
+        </div>
+        <div className="space-y-2">
           <Label htmlFor="date">Data</Label>
           <Input
             id="date"
@@ -79,17 +85,16 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
             required
           />
         </div>
-        {(type === 'expense' || type === 'debt') && (
-          <div className="space-y-2">
-            <Label htmlFor="dueDate">Prazo Final (Opcional)</Label>
-            <Input
-              id="dueDate"
-              type="date"
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
-            />
-          </div>
-        )}
+        <div className="space-y-2">
+          <Label htmlFor="dueDate">Prazo Final</Label>
+          <Input
+            id="dueDate"
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            placeholder="Opcional"
+          />
+        </div>
         <div className="space-y-2">
           <Label htmlFor="category">Categoria</Label>
           <Input
@@ -107,7 +112,7 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="income">Entrada</SelectItem>
-              <SelectItem value="expense">Despesa</SelectItem>
+              <SelectItem value="expense">Saída</SelectItem>
               <SelectItem value="debt">Dívida</SelectItem>
             </SelectContent>
           </Select>
