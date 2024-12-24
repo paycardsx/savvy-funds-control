@@ -13,23 +13,27 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [category, setCategory] = useState("");
   const [type, setType] = useState<TransactionType>("expense");
   const [status, setStatus] = useState<TransactionStatus>("pending");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddTransaction({
+    const transaction = {
       description,
       amount: Number(amount),
       date,
+      ...(type !== 'income' && dueDate ? { dueDate } : {}),
       category,
       type,
       status,
-    });
+    };
+    onAddTransaction(transaction);
     setDescription("");
     setAmount("");
     setDate("");
+    setDueDate("");
     setCategory("");
     setType("expense");
     setStatus("pending");
@@ -68,6 +72,17 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
             required
           />
         </div>
+        {type !== 'income' && (
+          <div className="space-y-2">
+            <Label htmlFor="dueDate">Prazo Final (Opcional)</Label>
+            <Input
+              id="dueDate"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+          </div>
+        )}
         <div className="space-y-2">
           <Label htmlFor="category">Categoria</Label>
           <Input

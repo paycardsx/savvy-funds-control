@@ -6,6 +6,7 @@ export interface Transaction {
   description: string;
   amount: number;
   date: string;
+  dueDate?: string; // Campo opcional de prazo final
   category: string;
   type: TransactionType;
   status: TransactionStatus;
