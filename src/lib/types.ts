@@ -6,7 +6,9 @@ export interface Transaction {
   description: string;
   amount: number;
   date: string;
+  dueDate: string | null;
   category: string;
   type: TransactionType;
   status: TransactionStatus;
+  expenses: number;
 }
