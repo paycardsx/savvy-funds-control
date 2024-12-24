@@ -1,6 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Transaction, TransactionType } from "./types";
+import { Transaction } from "./types";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -22,6 +22,7 @@ export const calculateTotals = (transactions: Transaction[]) => {
           acc.income += amount;
           break;
         case 'expense':
+        case 'bill':
           acc.expenses += amount;
           break;
         case 'debt':

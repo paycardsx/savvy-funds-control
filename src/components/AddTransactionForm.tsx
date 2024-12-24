@@ -17,6 +17,8 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
   const [category, setCategory] = useState("");
   const [type, setType] = useState<TransactionType>("expense");
   const [status, setStatus] = useState<TransactionStatus>("pending");
+  const [currentInstallment, setCurrentInstallment] = useState("1");
+  const [totalInstallments, setTotalInstallments] = useState("1");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,6 +27,12 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
       amount: Number(amount),
       date,
       ...(type !== 'income' && dueDate ? { dueDate } : {}),
+      ...(type !== 'income' && Number(totalInstallments) > 1 ? {
+        installments: {
+          current: Number(currentInstallment),
+          total: Number(totalInstallments)
+        }
+      } : {}),
       category,
       type,
       status,
@@ -37,7 +45,11 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
     setCategory("");
     setType("expense");
     setStatus("pending");
+    setCurrentInstallment("1");
+    setTotalInstallments("1");
   };
+
+  const showInstallments = type !== 'income';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,7 +86,7 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
         </div>
         {type !== 'income' && (
           <div className="space-y-2">
-            <Label htmlFor="dueDate">Prazo Final (Opcional)</Label>
+            <Label htmlFor="dueDate">Prazo Final</Label>
             <Input
               id="dueDate"
               type="date"
@@ -82,6 +94,30 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
               onChange={(e) => setDueDate(e.target.value)}
             />
           </div>
+        )}
+        {showInstallments && (
+          <>
+            <div className="space-y-2">
+              <Label htmlFor="currentInstallment">Parcela Atual</Label>
+              <Input
+                id="currentInstallment"
+                type="number"
+                min="1"
+                value={currentInstallment}
+                onChange={(e) => setCurrentInstallment(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="totalInstallments">Total de Parcelas</Label>
+              <Input
+                id="totalInstallments"
+                type="number"
+                min="1"
+                value={totalInstallments}
+                onChange={(e) => setTotalInstallments(e.target.value)}
+              />
+            </div>
+          </>
         )}
         <div className="space-y-2">
           <Label htmlFor="category">Categoria</Label>
@@ -100,7 +136,8 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="income">Entrada</SelectItem>
-              <SelectItem value="expense">Saída</SelectItem>
+              <SelectItem value="expense">Despesa</SelectItem>
+              <SelectItem value="bill">Conta</SelectItem>
               <SelectItem value="debt">Dívida</SelectItem>
             </SelectContent>
           </Select>

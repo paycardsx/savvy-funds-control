@@ -1,12 +1,16 @@
 export type TransactionStatus = 'paid' | 'pending' | 'overdue';
-export type TransactionType = 'income' | 'expense' | 'debt';
+export type TransactionType = 'income' | 'expense' | 'debt' | 'bill';
 
 export interface Transaction {
   id: string;
   description: string;
   amount: number;
   date: string;
-  dueDate?: string; // Campo opcional de prazo final
+  dueDate?: string;
+  installments?: {
+    current: number;
+    total: number;
+  };
   category: string;
   type: TransactionType;
   status: TransactionStatus;

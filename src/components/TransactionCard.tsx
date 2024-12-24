@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatCurrency } from "@/lib/utils";
 import { Transaction } from "@/lib/types";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Layers } from "lucide-react";
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -27,11 +27,27 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
       case 'income':
         return 'text-green-600';
       case 'expense':
+      case 'bill':
         return 'text-red-600';
       case 'debt':
         return 'text-orange-600';
       default:
         return 'text-gray-600';
+    }
+  };
+
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'income':
+        return 'Entrada';
+      case 'expense':
+        return 'Despesa';
+      case 'bill':
+        return 'Conta';
+      case 'debt':
+        return 'Dívida';
+      default:
+        return type;
     }
   };
 
@@ -44,12 +60,19 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
             <Badge variant="outline" className={getStatusColor(transaction.status)}>
               {transaction.status === 'paid' ? 'Pago' : transaction.status === 'pending' ? 'Pendente' : 'Em atraso'}
             </Badge>
+            <Badge variant="outline">{getTypeLabel(transaction.type)}</Badge>
             <span className="text-sm text-gray-500">{transaction.category}</span>
           </div>
-          {transaction.dueDate && (transaction.type === 'expense' || transaction.type === 'debt') && (
+          {transaction.dueDate && transaction.type !== 'income' && (
             <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
               <Clock className="h-4 w-4" />
               <span>Vence em: {new Date(transaction.dueDate).toLocaleDateString('pt-BR')}</span>
+            </div>
+          )}
+          {transaction.installments && (
+            <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+              <Layers className="h-4 w-4" />
+              <span>Parcela {transaction.installments.current} de {transaction.installments.total}</span>
             </div>
           )}
         </div>
