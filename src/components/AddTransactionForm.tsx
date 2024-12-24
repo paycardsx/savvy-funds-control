@@ -13,23 +13,34 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const [category, setCategory] = useState("");
   const [type, setType] = useState<TransactionType>("expense");
   const [status, setStatus] = useState<TransactionStatus>("pending");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAddTransaction({
+    const transaction = {
       description,
       amount: Number(amount),
       date,
       category,
       type,
       status,
-    });
+    } as Omit<Transaction, 'id'>;
+
+    // Adiciona o prazo final apenas se for despesa ou dívida e tiver sido preenchido
+    if ((type === 'expense' || type === 'debt') && dueDate) {
+      transaction.dueDate = dueDate;
+    }
+
+    onAddTransaction(transaction);
+    
+    // Limpa o formulário
     setDescription("");
     setAmount("");
     setDate("");
+    setDueDate("");
     setCategory("");
     setType("expense");
     setStatus("pending");
@@ -68,6 +79,17 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
             required
           />
         </div>
+        {(type === 'expense' || type === 'debt') && (
+          <div className="space-y-2">
+            <Label htmlFor="dueDate">Prazo Final (Opcional)</Label>
+            <Input
+              id="dueDate"
+              type="date"
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
+            />
+          </div>
+        )}
         <div className="space-y-2">
           <Label htmlFor="category">Categoria</Label>
           <Input
@@ -85,7 +107,7 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="income">Entrada</SelectItem>
-              <SelectItem value="expense">Saída</SelectItem>
+              <SelectItem value="expense">Despesa</SelectItem>
               <SelectItem value="debt">Dívida</SelectItem>
             </SelectContent>
           </Select>

@@ -46,6 +46,11 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
             </Badge>
             <span className="text-sm text-gray-500">{transaction.category}</span>
           </div>
+          {transaction.dueDate && (transaction.type === 'expense' || transaction.type === 'debt') && (
+            <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
+              <span>Prazo: {new Date(transaction.dueDate).toLocaleDateString('pt-BR')}</span>
+            </div>
+          )}
         </div>
         <div className="text-right">
           <span className={`text-lg font-bold ${getTypeColor(transaction.type)}`}>
