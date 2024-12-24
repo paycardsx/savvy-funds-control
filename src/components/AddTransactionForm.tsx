@@ -13,11 +13,9 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState("");
-  const [dueDate, setDueDate] = useState("");
   const [category, setCategory] = useState("");
   const [type, setType] = useState<TransactionType>("expense");
   const [status, setStatus] = useState<TransactionStatus>("pending");
-  const [expenses, setExpenses] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,20 +23,16 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
       description,
       amount: Number(amount),
       date,
-      dueDate: dueDate || null,
       category,
       type,
       status,
-      expenses: expenses ? Number(expenses) : 0,
     });
     setDescription("");
     setAmount("");
     setDate("");
-    setDueDate("");
     setCategory("");
     setType("expense");
     setStatus("pending");
-    setExpenses("");
   };
 
   return (
@@ -65,17 +59,6 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="expenses">Despesas Adicionais</Label>
-          <Input
-            id="expenses"
-            type="number"
-            step="0.01"
-            value={expenses}
-            onChange={(e) => setExpenses(e.target.value)}
-            placeholder="Opcional"
-          />
-        </div>
-        <div className="space-y-2">
           <Label htmlFor="date">Data</Label>
           <Input
             id="date"
@@ -83,16 +66,6 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
             value={date}
             onChange={(e) => setDate(e.target.value)}
             required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="dueDate">Prazo Final</Label>
-          <Input
-            id="dueDate"
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            placeholder="Opcional"
           />
         </div>
         <div className="space-y-2">
