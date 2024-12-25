@@ -9,10 +9,15 @@ interface TransactionListProps {
 }
 
 export const TransactionList = ({ transactions }: TransactionListProps) => {
+  // Get first and last day of current month
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+
   const [search, setSearch] = useState("");
   const [selectedType, setSelectedType] = useState<TransactionType | "all">("all");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [startDate, setStartDate] = useState(firstDayOfMonth);
+  const [endDate, setEndDate] = useState(lastDayOfMonth);
 
   const filteredTransactions = transactions.filter((transaction) => {
     const matchesSearch = 
