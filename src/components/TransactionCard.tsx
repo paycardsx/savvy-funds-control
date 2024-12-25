@@ -54,6 +54,15 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
     }
   };
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
   return (
     <Card className="p-4 mb-4 hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start">
@@ -69,7 +78,7 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
           {transaction.dueDate && transaction.type !== 'income' && transaction.type !== 'daily_expense' && (
             <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
               <Clock className="h-4 w-4" />
-              <span>Vence em: {new Date(transaction.dueDate).toLocaleDateString('pt-BR')}</span>
+              <span>Vence em: {formatDate(transaction.dueDate)}</span>
             </div>
           )}
           {transaction.installments && (
@@ -85,7 +94,7 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
           </span>
           <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
             <Calendar className="h-4 w-4" />
-            <span>{new Date(transaction.date).toLocaleDateString('pt-BR')}</span>
+            <span>{formatDate(transaction.date)}</span>
           </div>
         </div>
       </div>
