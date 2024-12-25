@@ -54,6 +54,22 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Tipo de transação como primeiro campo */}
+        <div className="space-y-2 md:col-span-2">
+          <Label htmlFor="type">Tipo de Transação</Label>
+          <Select value={type} onValueChange={(value: TransactionType) => setType(value)}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="income">Entrada</SelectItem>
+              <SelectItem value="expense">Despesa</SelectItem>
+              <SelectItem value="bill">Conta</SelectItem>
+              <SelectItem value="debt">Dívida</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="description">Descrição</Label>
           <Input
@@ -127,20 +143,6 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
             onChange={(e) => setCategory(e.target.value)}
             required
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="type">Tipo</Label>
-          <Select value={type} onValueChange={(value: TransactionType) => setType(value)}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="income">Entrada</SelectItem>
-              <SelectItem value="expense">Despesa</SelectItem>
-              <SelectItem value="bill">Conta</SelectItem>
-              <SelectItem value="debt">Dívida</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
