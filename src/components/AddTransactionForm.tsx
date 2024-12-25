@@ -10,10 +10,12 @@ interface AddTransactionFormProps {
 }
 
 export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps) => {
+  const today = new Date().toISOString().split('T')[0];
+  
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
-  const [date, setDate] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [date, setDate] = useState(today);
+  const [dueDate, setDueDate] = useState(today);
   const [category, setCategory] = useState("");
   const [type, setType] = useState<TransactionType>("expense");
   const [status, setStatus] = useState<TransactionStatus>("pending");
@@ -26,8 +28,8 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
       description,
       amount: Number(amount),
       date,
-      ...(type !== 'income' && dueDate ? { dueDate } : {}),
-      ...(type !== 'income' && Number(totalInstallments) > 1 ? {
+      ...(type !== 'income' && type !== 'daily_expense' && dueDate ? { dueDate } : {}),
+      ...(type !== 'income' && type !== 'daily_expense' && Number(totalInstallments) > 1 ? {
         installments: {
           current: Number(currentInstallment),
           total: Number(totalInstallments)
@@ -40,8 +42,8 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
     onAddTransaction(transaction);
     setDescription("");
     setAmount("");
-    setDate("");
-    setDueDate("");
+    setDate(today);
+    setDueDate(today);
     setCategory("");
     setType("expense");
     setStatus("pending");
