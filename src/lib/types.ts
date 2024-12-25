@@ -1,5 +1,5 @@
 export type TransactionStatus = 'paid' | 'pending' | 'overdue';
-export type TransactionType = 'income' | 'expense' | 'debt' | 'bill';
+export type TransactionType = 'income' | 'expense' | 'debt' | 'bill' | 'daily_expense';
 
 export interface Transaction {
   id: string;

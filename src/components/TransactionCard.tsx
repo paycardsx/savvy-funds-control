@@ -28,6 +28,7 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
         return 'text-green-600';
       case 'expense':
       case 'bill':
+      case 'daily_expense':
         return 'text-red-600';
       case 'debt':
         return 'text-orange-600';
@@ -42,6 +43,8 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
         return 'Entrada';
       case 'expense':
         return 'Despesa';
+      case 'daily_expense':
+        return 'Compra Diária';
       case 'bill':
         return 'Conta';
       case 'debt':
@@ -63,7 +66,7 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
             <Badge variant="outline">{getTypeLabel(transaction.type)}</Badge>
             <span className="text-sm text-gray-500">{transaction.category}</span>
           </div>
-          {transaction.dueDate && transaction.type !== 'income' && (
+          {transaction.dueDate && transaction.type !== 'income' && transaction.type !== 'daily_expense' && (
             <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
               <Clock className="h-4 w-4" />
               <span>Vence em: {new Date(transaction.dueDate).toLocaleDateString('pt-BR')}</span>

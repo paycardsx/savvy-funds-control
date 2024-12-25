@@ -49,7 +49,7 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
     setTotalInstallments("1");
   };
 
-  const showInstallments = type !== 'income';
+  const showInstallments = type !== 'income' && type !== 'daily_expense';
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -63,6 +63,7 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="income">Entrada</SelectItem>
+              <SelectItem value="daily_expense">Compra Diária</SelectItem>
               <SelectItem value="expense">Despesa</SelectItem>
               <SelectItem value="bill">Conta</SelectItem>
               <SelectItem value="debt">Dívida</SelectItem>
@@ -100,7 +101,7 @@ export const AddTransactionForm = ({ onAddTransaction }: AddTransactionFormProps
             required
           />
         </div>
-        {type !== 'income' && (
+        {type !== 'income' && type !== 'daily_expense' && (
           <div className="space-y-2">
             <Label htmlFor="dueDate">Prazo Final</Label>
             <Input
