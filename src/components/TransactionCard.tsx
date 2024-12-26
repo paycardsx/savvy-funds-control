@@ -96,8 +96,8 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
             </Badge>
           </div>
 
-        {/* Informações de Parcelas e Prazo */}
-        <div className="flex items-center gap-3 mt-1 text-sm">
+          {/* Informações de Parcelas e Prazo */}
+          <div className="flex items-center gap-3 mt-1 text-sm">
             {/* Data */}
             <div className="flex items-center text-[#1B3047]/60">
               <Calendar className="h-4 w-4 mr-1" />
@@ -139,22 +139,23 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
               </TooltipProvider>
             )}
 
-          {/* Dias Restantes com Destaque para Atraso */}
-          {transaction.type !== "income" && transaction.type !== "daily_expense" && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className={`flex items-center ${getDaysRemainingColor(daysRemaining)}`}>
-                    <AlertCircle className="h-4 w-4 mr-1" />
-                    <span>{formatDaysRemaining(daysRemaining)}</span>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Vencimento: {formatDate(transaction.dueDate)}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+            {/* Dias Restantes com Destaque para Atraso */}
+            {transaction.type !== "income" && transaction.type !== "daily_expense" && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className={`flex items-center ${getDaysRemainingColor(daysRemaining)}`}>
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      <span>{formatDaysRemaining(daysRemaining)}</span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Vencimento: {formatDate(transaction.dueDate)}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
         </div>
 
         {/* Valor */}
