@@ -7,6 +7,7 @@ import { FinancialSummary } from "../components/FinancialSummary";
 import { TransactionList } from "../components/TransactionList";
 import { AddTransactionForm } from "../components/AddTransactionForm";
 import { Plus, Home, ArrowDown, ShoppingBag } from "lucide-react";
+import { useToast } from "../components/ui/use-toast";
 
 type DialogType = "transaction" | "income" | "shopping" | null;
 
@@ -14,12 +15,18 @@ type DialogType = "transaction" | "income" | "shopping" | null;
 const TRANSACTIONS_STORAGE_KEY = "@promptpay/transactions";
 
 const Index = () => {
+  const { toast } = useToast();
+  
   // Inicializa o estado com as transações do localStorage
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
-    if (storedTransactions) {
-      console.log("Carregando transações do localStorage:", JSON.parse(storedTransactions));
-      return JSON.parse(storedTransactions);
+    try {
+      const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+      if (storedTransactions) {
+        console.log("Carregando transações do localStorage:", JSON.parse(storedTransactions));
+        return JSON.parse(storedTransactions);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar transações do localStorage:", error);
     }
     console.log("Nenhuma transação encontrada no localStorage");
     return [];
@@ -28,39 +35,60 @@ const Index = () => {
 
   // Atualiza o localStorage sempre que as transações mudarem
   useEffect(() => {
-    console.log("Salvando transações no localStorage:", transactions);
-    localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
+    try {
+      console.log("Salvando transações no localStorage:", transactions);
+      localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
+    } catch (error) {
+      console.error("Erro ao salvar transações no localStorage:", error);
+    }
   }, [transactions]);
 
   const handleAddTransaction = (newTransaction: Omit<Transaction, 'id'>) => {
     console.log("Recebendo nova transação:", newTransaction);
 
-    // Garante que o número da parcela atual está correto
-    const currentInstallment = calculateCurrentInstallment(
-      newTransaction.date,
-      newTransaction.dueDate,
-      newTransaction.installments.period
-    );
+    try {
+      // Garante que o número da parcela atual está correto
+      const currentInstallment = calculateCurrentInstallment(
+        newTransaction.date,
+        newTransaction.dueDate,
+        newTransaction.installments.period
+      );
 
-    const transaction: Transaction = {
-      ...newTransaction,
-      id: Math.random().toString(36).substr(2, 9),
-      installments: {
-        ...newTransaction.installments,
-        current: currentInstallment
-      }
-    };
+      const transaction: Transaction = {
+        ...newTransaction,
+        id: crypto.randomUUID(), // Usando um UUID mais seguro
+        installments: {
+          ...newTransaction.installments,
+          current: currentInstallment
+        }
+      };
 
-    console.log("Transação processada:", transaction);
+      console.log("Transação processada:", transaction);
 
-    // Adiciona a nova transação no início da lista
-    setTransactions(prevTransactions => {
-      const updatedTransactions = [transaction, ...prevTransactions];
-      console.log("Lista atualizada de transações:", updatedTransactions);
-      return updatedTransactions;
-    });
-    
-    setActiveDialog(null);
+      // Adiciona a nova transação no início da lista
+      setTransactions(prevTransactions => {
+        const updatedTransactions = [transaction, ...prevTransactions];
+        console.log("Lista atualizada de transações:", updatedTransactions);
+        return updatedTransactions;
+      });
+      
+      setActiveDialog(null);
+
+      // Notifica o usuário
+      toast({
+        title: "Transação adicionada",
+        description: `${transaction.description} foi adicionada com sucesso.`,
+        duration: 3000,
+      });
+    } catch (error) {
+      console.error("Erro ao adicionar transação:", error);
+      toast({
+        title: "Erro ao adicionar transação",
+        description: "Ocorreu um erro ao adicionar a transação. Tente novamente.",
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
   };
 
   const totals = calculateTotals(transactions);
