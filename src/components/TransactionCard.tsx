@@ -5,6 +5,7 @@ import { Transaction } from "../lib/types";
 import { Calendar, ArrowUpCircle, ArrowDownCircle, Clock, AlertCircle, CreditCard, Banknote } from "lucide-react";
 import { getCategoryById } from "../lib/categories";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { PaymentButton } from "./transaction/PaymentButton";
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -73,13 +74,6 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
 
   const daysRemaining = calculateDaysRemaining(transaction.dueDate);
 
-  console.log("[TransactionCard] Informações calculadas:", {
-    category: getCategoryLabel(transaction.category),
-    daysRemaining,
-    installments: transaction.installments,
-    paymentMethod: transaction.paymentMethod
-  });
-
   return (
     <Card className="p-4 bg-card rounded-lg shadow-md hover:shadow-lg transition-shadow border border-border group">
       <div className="flex items-center justify-between gap-4">
@@ -102,8 +96,8 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
             </Badge>
           </div>
 
-          {/* Informações de Parcelas e Prazo */}
-          <div className="flex items-center gap-3 mt-1 text-sm">
+        {/* Informações de Parcelas e Prazo */}
+        <div className="flex items-center gap-3 mt-1 text-sm">
             {/* Data */}
             <div className="flex items-center text-[#1B3047]/60">
               <Calendar className="h-4 w-4 mr-1" />
@@ -145,23 +139,22 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
               </TooltipProvider>
             )}
 
-            {/* Dias Restantes */}
-            {transaction.type !== "income" && transaction.type !== "daily_expense" && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div className={`flex items-center ${getDaysRemainingColor(daysRemaining)}`}>
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      <span>{formatDaysRemaining(daysRemaining)}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Vencimento: {formatDate(transaction.dueDate)}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
+          {/* Dias Restantes com Destaque para Atraso */}
+          {transaction.type !== "income" && transaction.type !== "daily_expense" && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className={`flex items-center ${getDaysRemainingColor(daysRemaining)}`}>
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    <span>{formatDaysRemaining(daysRemaining)}</span>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Vencimento: {formatDate(transaction.dueDate)}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
         </div>
 
         {/* Valor */}
@@ -181,6 +174,9 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
           </div>
         </div>
       </div>
+
+      {/* Botão de Pagamento para Parcelas em Atraso */}
+      <PaymentButton transaction={transaction} daysRemaining={daysRemaining} />
 
       {/* Informações Adicionais em Mobile */}
       <div className="md:hidden mt-2 pt-2 border-t border-[#1B3047]/10">
