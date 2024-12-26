@@ -3,6 +3,7 @@ import { Badge } from "../components/ui/badge";
 import { formatCurrency } from "../lib/utils";
 import { Transaction } from "../lib/types";
 import { Calendar, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
+import { getCategoryById } from "../lib/categories";
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -45,6 +46,11 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
     });
   };
 
+  const getCategoryLabel = (categoryId: string) => {
+    const category = getCategoryById(categoryId);
+    return category?.label || categoryId;
+  };
+
   return (
     <Card className="p-4 bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow border border-[#1B3047]/10 group">
       <div className="flex items-center justify-between gap-4">
@@ -63,7 +69,7 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
               variant="outline" 
               className="hidden md:inline-flex bg-[#1B3047]/5 text-[#1B3047] border-[#1B3047]/20"
             >
-              {transaction.category}
+              {getCategoryLabel(transaction.category)}
             </Badge>
           </div>
           <div className="flex items-center gap-2 mt-1 text-sm text-[#1B3047]/60">
@@ -84,7 +90,7 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
               variant="outline" 
               className="text-xs bg-[#1B3047]/5 text-[#1B3047] border-[#1B3047]/20"
             >
-              {transaction.category}
+              {getCategoryLabel(transaction.category)}
             </Badge>
           </div>
         </div>

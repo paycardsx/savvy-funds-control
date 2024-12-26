@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Transaction, TransactionStatus, TransactionType } from "../lib/types";
-import { X } from "lucide-react";
+import { X, Info } from "lucide-react";
+import { Category, getCategoriesByType, getDefaultCategoryForType } from "../lib/categories";
+import { CategoryManager } from "./CategoryManager";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 interface AddTransactionFormProps {
   onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
@@ -31,6 +34,16 @@ export const AddTransactionForm = ({
   const [totalInstallments, setTotalInstallments] = useState("1");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState<TransactionStatus>("pending");
+  const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const categories = getCategoriesByType(type);
+    setAvailableCategories(categories);
+    const defaultCategory = getDefaultCategoryForType(type);
+    if (defaultCategory) {
+      setCategory(defaultCategory.id);
+    }
+  }, [type]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,6 +63,11 @@ export const AddTransactionForm = ({
     onAddTransaction(transaction);
   };
 
+  const handleCategoryAdded = (newCategory: Category) => {
+    setAvailableCategories(getCategoriesByType(type));
+    setCategory(newCategory.id);
+  };
+
   const getFormTitle = () => {
     switch (type) {
       case "income":
@@ -58,6 +76,21 @@ export const AddTransactionForm = ({
         return "Registrar Compra";
       default:
         return "Nova Transação";
+    }
+  };
+
+  const getTypeLabel = (type: TransactionType) => {
+    switch (type) {
+      case "income":
+        return "Entrada";
+      case "daily_expense":
+        return "Compra Diária";
+      case "expense":
+        return "Despesa";
+      case "bill":
+        return "Conta";
+      case "debt":
+        return "Dívida";
     }
   };
 
@@ -100,11 +133,7 @@ export const AddTransactionForm = ({
                 <SelectContent className="bg-white border border-[#1B3047]/10 shadow-lg rounded-lg">
                   {availableTypes.map((type) => (
                     <SelectItem key={type} value={type} className="hover:bg-[#1B3047]/5">
-                      {type === "income" && "Entrada"}
-                      {type === "expense" && "Despesa"}
-                      {type === "daily_expense" && "Compra Diária"}
-                      {type === "bill" && "Conta"}
-                      {type === "debt" && "Dívida"}
+                      {getTypeLabel(type)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -212,12 +241,35 @@ export const AddTransactionForm = ({
           {/* Categoria */}
           <div>
             <p className="text-sm font-medium text-[#1B3047]/60 mb-1.5">Categoria</p>
-            <Input
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="Digite a categoria"
-              className="h-11 bg-[#1B3047]/5 border-0 rounded-xl focus:ring-1 focus:ring-[#1B3047]/20"
-            />
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="w-full h-11 bg-[#1B3047]/5 border-0 rounded-xl focus:ring-1 focus:ring-[#1B3047]/20">
+                <SelectValue placeholder="Selecione a categoria" />
+              </SelectTrigger>
+              <SelectContent className="bg-white border border-[#1B3047]/10 shadow-lg rounded-lg max-h-[300px]">
+                {availableCategories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id} className="hover:bg-[#1B3047]/5">
+                    <div className="flex items-center gap-2">
+                      <span>{cat.label}</span>
+                      {cat.description && (
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Info className="h-4 w-4 text-[#1B3047]/60" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{cat.description}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {/* Gerenciador de Categorias */}
+            <CategoryManager type={type} onCategoryAdded={handleCategoryAdded} />
           </div>
 
           {/* Botão Submit */}
