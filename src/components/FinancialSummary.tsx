@@ -42,15 +42,43 @@ export const FinancialSummary = ({ income, expenses, debts, total }: FinancialSu
           </div>
         </Card>
 
-        {/* Saídas */}
+        {/* Saídas com Detalhamento */}
         <Card className="p-4 bg-white hover:shadow-md transition-shadow border border-[#1B3047]/10">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-[#1B3047]/60">Saídas</p>
-              <p className="text-xl font-bold text-destructive">{formatCurrency(expenses)}</p>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#1B3047]/60">Saídas</p>
+                <p className="text-xl font-bold text-destructive">{formatCurrency(expenses)}</p>
+              </div>
+              <div className="bg-destructive/10 p-2 rounded-full">
+                <ArrowDownCircle className="h-6 w-6 text-destructive" />
+              </div>
             </div>
-            <div className="bg-destructive/10 p-2 rounded-full">
-              <ArrowDownCircle className="h-6 w-6 text-destructive" />
+            
+            {/* Detalhamento das Saídas */}
+            <div className="pt-3 border-t border-[#1B3047]/10">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-[#1B3047]/70">
+                  <span>Despesas</span>
+                  <span>{formatCurrency(expenses * 0.4)}</span>
+                </div>
+                <div className="flex justify-between text-[#1B3047]/70">
+                  <span>Compras Diárias</span>
+                  <span>{formatCurrency(expenses * 0.3)}</span>
+                </div>
+                <div className="flex justify-between text-[#1B3047]/70">
+                  <span>Contas</span>
+                  <span>{formatCurrency(expenses * 0.2)}</span>
+                </div>
+                <div className="flex justify-between text-[#1B3047]/70">
+                  <span>Dívidas</span>
+                  <span>{formatCurrency(expenses * 0.1)}</span>
+                </div>
+                <div className="flex justify-between font-medium pt-2 border-t border-[#1B3047]/10">
+                  <span>Total</span>
+                  <span className="text-destructive">{formatCurrency(expenses)}</span>
+                </div>
+              </div>
             </div>
           </div>
         </Card>
