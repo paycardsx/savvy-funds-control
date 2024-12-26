@@ -53,18 +53,10 @@ export const TransactionList = ({ transactions }: TransactionListProps) => {
       // Filtro de categoria
       const matchesCategory = !filters.category || transaction.category === filters.category;
       
-      // Filtro de data - Convertendo as strings de data para objetos Date
+      // Filtro de data
       const transactionDate = new Date(transaction.date);
-      const startDateObj = startDate ? new Date(startDate) : null;
-      const endDateObj = endDate ? new Date(endDate) : null;
-
-      // Ajustando para considerar o dia inteiro
-      if (startDateObj) startDateObj.setHours(0, 0, 0, 0);
-      if (endDateObj) endDateObj.setHours(23, 59, 59, 999);
-      transactionDate.setHours(12, 0, 0, 0); // Meio-dia para evitar problemas de fuso horário
-
-      const matchesDateRange = (!startDateObj || transactionDate >= startDateObj) &&
-                              (!endDateObj || transactionDate <= endDateObj);
+      const matchesDateRange = (!startDate || transactionDate >= new Date(startDate)) &&
+                              (!endDate || transactionDate <= new Date(endDate));
 
       const matches = matchesSearch && matchesType && matchesCategory && matchesDateRange;
       console.log("Resultado dos filtros:", {
@@ -72,12 +64,7 @@ export const TransactionList = ({ transactions }: TransactionListProps) => {
         matchesType,
         matchesCategory,
         matchesDateRange,
-        final: matches,
-        dates: {
-          transaction: transactionDate.toISOString(),
-          start: startDateObj?.toISOString(),
-          end: endDateObj?.toISOString()
-        }
+        final: matches
       });
 
       return matches;
