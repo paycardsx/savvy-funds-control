@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "../components/ui/input";
 import { Transaction, TransactionType } from "../lib/types";
 import { TransactionCard } from "./TransactionCard";
@@ -24,29 +24,59 @@ export const TransactionList = ({ transactions }: TransactionListProps) => {
     category?: string;
   }>({});
 
-  const filteredTransactions = transactions.filter((transaction) => {
-    // Filtro de busca
-    const category = getCategoryById(transaction.category);
-    const matchesSearch = 
-      transaction.description.toLowerCase().includes(search.toLowerCase()) ||
-      (category?.label || "").toLowerCase().includes(search.toLowerCase());
-    
-    // Filtro de tipo
-    const matchesType = !filters.type || transaction.type === filters.type;
-    
-    // Filtro de categoria
-    const matchesCategory = !filters.category || transaction.category === filters.category;
-    
-    // Filtro de data
-    const transactionDate = new Date(transaction.date);
-    const matchesDateRange = (!startDate || transactionDate >= new Date(startDate)) &&
-                            (!endDate || transactionDate <= new Date(endDate));
+  // Log quando as transações mudam
+  useEffect(() => {
+    console.log("TransactionList recebeu transações:", transactions);
+  }, [transactions]);
 
-    return matchesSearch && matchesType && matchesCategory && matchesDateRange;
-  });
+  const filteredTransactions = transactions
+    .sort((a, b) => {
+      // Primeiro por data (mais recente primeiro)
+      const dateComparison = new Date(b.date).getTime() - new Date(a.date).getTime();
+      if (dateComparison !== 0) return dateComparison;
+      
+      // Se mesma data, por ID (mais recente primeiro)
+      return b.id.localeCompare(a.id);
+    })
+    .filter((transaction) => {
+      console.log("Filtrando transação:", transaction);
+
+      // Filtro de busca
+      const category = getCategoryById(transaction.category);
+      const matchesSearch = 
+        transaction.description.toLowerCase().includes(search.toLowerCase()) ||
+        (category?.label || "").toLowerCase().includes(search.toLowerCase());
+      
+      // Filtro de tipo
+      const matchesType = !filters.type || transaction.type === filters.type;
+      
+      // Filtro de categoria
+      const matchesCategory = !filters.category || transaction.category === filters.category;
+      
+      // Filtro de data
+      const transactionDate = new Date(transaction.date);
+      const matchesDateRange = (!startDate || transactionDate >= new Date(startDate)) &&
+                              (!endDate || transactionDate <= new Date(endDate));
+
+      const matches = matchesSearch && matchesType && matchesCategory && matchesDateRange;
+      console.log("Resultado dos filtros:", {
+        matchesSearch,
+        matchesType,
+        matchesCategory,
+        matchesDateRange,
+        final: matches
+      });
+
+      return matches;
+    });
+
+  // Log das transações filtradas
+  useEffect(() => {
+    console.log("Transações filtradas:", filteredTransactions);
+  }, [filteredTransactions]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 p-4 bg-white rounded-lg shadow-md">
       {/* Cabeçalho com Título e Contagem */}
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-semibold text-[#1B3047]">Transações</h2>

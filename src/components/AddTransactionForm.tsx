@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
-import { Transaction, TransactionType, PaymentMethod } from "../lib/types";
+import { Transaction, TransactionType } from "../lib/types";
 import { X } from "lucide-react";
 import { BasicInfoStep } from "./steps/BasicInfoStep";
 import { PaymentDetailsStep } from "./steps/PaymentDetailsStep";
-import { getLocalDate } from "../lib/utils";
+import { getLocalDate, calculateCurrentInstallment } from "../lib/utils";
 
 interface AddTransactionFormProps {
   onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
@@ -30,6 +30,7 @@ export const AddTransactionForm = ({
     dueDate: today,
     installments: {
       total: 1,
+      current: 1,
       period: "monthly"
     }
   });
@@ -41,8 +42,39 @@ export const AddTransactionForm = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("[AddTransactionForm] Iniciando submissão do formulário");
+    console.log("[AddTransactionForm] Estado atual do formulário:", formData);
+
     if (formData && isFormValid()) {
-      onAddTransaction(formData as Omit<Transaction, 'id'>);
+      // Garante que o número da parcela atual está correto
+      const currentInstallment = calculateCurrentInstallment(
+        formData.date!,
+        formData.dueDate!,
+        formData.installments!.period
+      );
+
+      console.log("[AddTransactionForm] Parcela atual calculada:", currentInstallment);
+
+      const finalData = {
+        ...formData,
+        installments: {
+          ...formData.installments!,
+          current: currentInstallment
+        }
+      };
+
+      console.log("[AddTransactionForm] Dados finais da transação:", finalData);
+      onAddTransaction(finalData as Omit<Transaction, 'id'>);
+      onClose?.();
+    } else {
+      console.log("[AddTransactionForm] Formulário inválido:", {
+        hasData: !!formData,
+        isValid: isFormValid(),
+        validationDetails: {
+          basicInfo: isBasicInfoValid(),
+          paymentMethod: isPaymentMethodValid()
+        }
+      });
     }
   };
 
@@ -71,15 +103,20 @@ export const AddTransactionForm = ({
   };
 
   const updateFormData = (data: Partial<Transaction>) => {
-    setFormData(prev => ({
-      ...prev,
-      ...data,
-      // Garante que as parcelas sempre tenham um período definido
-      installments: {
-        ...prev.installments,
-        ...data.installments,
-      }
-    }));
+    console.log("[AddTransactionForm] Atualizando dados do formulário:", data);
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        ...data,
+        // Garante que as parcelas sempre tenham um período definido
+        installments: {
+          ...prev.installments,
+          ...data.installments,
+        }
+      };
+      console.log("[AddTransactionForm] Novo estado do formulário:", updated);
+      return updated;
+    });
   };
 
   // Verifica se deve usar o formulário simples baseado no tipo atual
@@ -124,12 +161,20 @@ export const AddTransactionForm = ({
 
   // Valida se os campos básicos estão preenchidos
   const isBasicInfoValid = () => {
-    return !!(
+    const valid = !!(
       formData.description &&
       formData.amount &&
       formData.date &&
       formData.category
     );
+    console.log("[AddTransactionForm] Validação de informações básicas:", {
+      valid,
+      description: !!formData.description,
+      amount: !!formData.amount,
+      date: !!formData.date,
+      category: !!formData.category
+    });
+    return valid;
   };
 
   // Valida se o método de pagamento está preenchido
@@ -137,10 +182,14 @@ export const AddTransactionForm = ({
     if (shouldUseSimpleForm()) return true;
     
     const paymentMethod = formData.paymentMethod;
-    if (!paymentMethod) return false;
+    if (!paymentMethod) {
+      console.log("[AddTransactionForm] Método de pagamento não encontrado");
+      return false;
+    }
 
+    let valid = false;
     if (paymentMethod.type === "pix") {
-      return !!(
+      valid = !!(
         paymentMethod.holderName &&
         paymentMethod.bank &&
         paymentMethod.pixKey &&
@@ -148,17 +197,32 @@ export const AddTransactionForm = ({
         paymentMethod.pixBank
       );
     } else {
-      return !!(
+      valid = !!(
         paymentMethod.holderName &&
         paymentMethod.bank &&
         paymentMethod.recipientHolderName
       );
     }
+
+    console.log("[AddTransactionForm] Validação do método de pagamento:", {
+      type: paymentMethod.type,
+      valid,
+      fields: paymentMethod
+    });
+
+    return valid;
   };
 
   // Valida se o formulário está pronto para ser enviado
   const isFormValid = () => {
-    return isBasicInfoValid() && (shouldUseSimpleForm() || isPaymentMethodValid());
+    const valid = isBasicInfoValid() && (shouldUseSimpleForm() || isPaymentMethodValid());
+    console.log("[AddTransactionForm] Validação do formulário:", {
+      valid,
+      basicInfo: isBasicInfoValid(),
+      paymentMethod: isPaymentMethodValid(),
+      isSimpleForm: shouldUseSimpleForm()
+    });
+    return valid;
   };
 
   // Valida se pode avançar para o próximo passo
@@ -172,7 +236,7 @@ export const AddTransactionForm = ({
   return (
     <div className="w-full max-h-[90vh] overflow-y-auto">
       {/* Header */}
-      <div className={`${getHeaderColor()} rounded-t-[2rem] relative flex items-center justify-between h-[90px] px-6`}>
+    <div className={`${getHeaderColor()} rounded-t-lg relative flex items-center justify-between h-[90px] px-6`}>
         <h2 className="text-xl font-semibold text-white">{getFormTitle()}</h2>
         <button 
           type="button" 

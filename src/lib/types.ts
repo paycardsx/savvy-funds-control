@@ -33,6 +33,7 @@ export interface Transaction {
   dueDate: string;
   installments: {
     total: number;
+    current: number;
     period: InstallmentPeriod;
   };
   category: string;

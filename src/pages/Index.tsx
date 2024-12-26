@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "../components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "../components/ui/dialog";
 import { Transaction } from "../lib/types";
-import { calculateTotals } from "../lib/utils";
+import { calculateTotals, calculateCurrentInstallment } from "../lib/utils";
 import { FinancialSummary } from "../components/FinancialSummary";
 import { TransactionList } from "../components/TransactionList";
 import { AddTransactionForm } from "../components/AddTransactionForm";
@@ -10,16 +10,56 @@ import { Plus, Home, ArrowDown, ShoppingBag } from "lucide-react";
 
 type DialogType = "transaction" | "income" | "shopping" | null;
 
+// Chave para armazenar as transações no localStorage
+const TRANSACTIONS_STORAGE_KEY = "@promptpay/transactions";
+
 const Index = () => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  // Inicializa o estado com as transações do localStorage
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    const storedTransactions = localStorage.getItem(TRANSACTIONS_STORAGE_KEY);
+    if (storedTransactions) {
+      console.log("Carregando transações do localStorage:", JSON.parse(storedTransactions));
+      return JSON.parse(storedTransactions);
+    }
+    console.log("Nenhuma transação encontrada no localStorage");
+    return [];
+  });
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
 
+  // Atualiza o localStorage sempre que as transações mudarem
+  useEffect(() => {
+    console.log("Salvando transações no localStorage:", transactions);
+    localStorage.setItem(TRANSACTIONS_STORAGE_KEY, JSON.stringify(transactions));
+  }, [transactions]);
+
   const handleAddTransaction = (newTransaction: Omit<Transaction, 'id'>) => {
+    console.log("Recebendo nova transação:", newTransaction);
+
+    // Garante que o número da parcela atual está correto
+    const currentInstallment = calculateCurrentInstallment(
+      newTransaction.date,
+      newTransaction.dueDate,
+      newTransaction.installments.period
+    );
+
     const transaction: Transaction = {
       ...newTransaction,
       id: Math.random().toString(36).substr(2, 9),
+      installments: {
+        ...newTransaction.installments,
+        current: currentInstallment
+      }
     };
-    setTransactions([transaction, ...transactions]);
+
+    console.log("Transação processada:", transaction);
+
+    // Adiciona a nova transação no início da lista
+    setTransactions(prevTransactions => {
+      const updatedTransactions = [transaction, ...prevTransactions];
+      console.log("Lista atualizada de transações:", updatedTransactions);
+      return updatedTransactions;
+    });
+    
     setActiveDialog(null);
   };
 

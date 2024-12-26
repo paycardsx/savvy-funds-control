@@ -6,7 +6,7 @@ import { CategoryManager } from "../CategoryManager";
 import { useEffect, useState } from "react";
 import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
-import { getLocalDate, formatDate, calculateDueDate } from "../../lib/utils";
+import { getLocalDate, formatDate, calculateDueDate, calculateCurrentInstallment } from "../../lib/utils";
 
 interface BasicInfoStepProps {
   onDataChange: (data: Partial<Transaction>) => void;
@@ -57,6 +57,12 @@ export const BasicInfoStep = ({
       installmentPeriod
     );
 
+    const currentInstallment = calculateCurrentInstallment(
+      paymentDate,
+      dueDate,
+      installmentPeriod
+    );
+
     onDataChange({
       type,
       description,
@@ -65,6 +71,7 @@ export const BasicInfoStep = ({
       dueDate,
       installments: {
         total: Number(totalInstallments),
+        current: currentInstallment,
         period: installmentPeriod
       },
       category
@@ -95,6 +102,12 @@ export const BasicInfoStep = ({
       installmentPeriod
     );
 
+    const currentInstallment = calculateCurrentInstallment(
+      paymentDate,
+      dueDate,
+      installmentPeriod
+    );
+
     const updatedData: Partial<Transaction> = {
       type: newType,
       description,
@@ -103,6 +116,7 @@ export const BasicInfoStep = ({
       dueDate,
       installments: {
         total: Number(totalInstallments),
+        current: currentInstallment,
         period: installmentPeriod
       },
       category

@@ -55,6 +55,41 @@ export function calculateDueDate(date: string, total: number, period: "monthly" 
   return startDate.toISOString().split('T')[0];
 }
 
+// Função para calcular dias restantes
+export function calculateDaysRemaining(dueDate: string): number {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const [year, month, day] = dueDate.split('-').map(Number);
+  const due = new Date(year, month - 1, day);
+  
+  const diffTime = due.getTime() - today.getTime();
+  return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+}
+
+// Função para formatar período
+export function formatPeriod(period: "monthly" | "yearly"): string {
+  return period === "monthly" ? "mensal" : "anual";
+}
+
+// Função para formatar parcelas
+export function formatInstallments(current: number, total: number, period: "monthly" | "yearly"): string {
+  if (total === 1) return "Pagamento único";
+  return `${current}/${total} ${period === "monthly" ? "meses" : "anos"}`;
+}
+
+// Função para calcular parcela atual
+export function calculateCurrentInstallment(startDate: string, dueDate: string, period: "monthly" | "yearly"): number {
+  const [startYear, startMonth] = startDate.split('-').map(Number);
+  const [dueYear, dueMonth] = dueDate.split('-').map(Number);
+  
+  if (period === "monthly") {
+    return (dueYear - startYear) * 12 + (dueMonth - startMonth) + 1;
+  } else {
+    return dueYear - startYear + 1;
+  }
+}
+
 // Função para calcular totais
 export function calculateTotals(transactions: Transaction[]) {
   return transactions.reduce((acc, transaction) => {
