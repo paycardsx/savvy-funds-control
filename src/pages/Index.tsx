@@ -6,11 +6,13 @@ import { calculateTotals } from "../lib/utils";
 import { FinancialSummary } from "../components/FinancialSummary";
 import { TransactionList } from "../components/TransactionList";
 import { AddTransactionForm } from "../components/AddTransactionForm";
-import { Plus, Home } from "lucide-react";
+import { Plus, Home, ArrowDown, ShoppingBag } from "lucide-react";
+
+type DialogType = "transaction" | "income" | "shopping" | null;
 
 const Index = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeDialog, setActiveDialog] = useState<DialogType>(null);
 
   const handleAddTransaction = (newTransaction: Omit<Transaction, 'id'>) => {
     const transaction: Transaction = {
@@ -18,10 +20,28 @@ const Index = () => {
       id: Math.random().toString(36).substr(2, 9),
     };
     setTransactions([transaction, ...transactions]);
-    setIsDialogOpen(false);
+    setActiveDialog(null);
   };
 
   const totals = calculateTotals(transactions);
+
+  // Componente de Dialog reutilizável
+  const TransactionDialog = ({ type, children }: { type: DialogType, children: React.ReactNode }) => (
+    <Dialog open={activeDialog === type} onOpenChange={(open) => setActiveDialog(open ? type : null)}>
+      <DialogTrigger asChild>
+        {children}
+      </DialogTrigger>
+      <DialogContent className={`!p-0 ${window.innerWidth < 768 ? "!rounded-t-[2rem] !rounded-b-none h-[85vh]" : ""} overflow-y-auto`}>
+        <AddTransactionForm 
+          onAddTransaction={handleAddTransaction} 
+          onClose={() => setActiveDialog(null)}
+          defaultType={type === "income" ? "income" : type === "shopping" ? "daily_expense" : "expense"}
+          availableTypes={type === "income" ? ["income"] : type === "shopping" ? ["daily_expense"] : ["expense", "bill", "debt"]}
+          simpleForm={type !== "transaction"}
+        />
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -51,50 +71,76 @@ const Index = () => {
       </main>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 md:hidden z-20">
         <div className="flex justify-center items-center h-16">
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
+          <div className="flex items-center gap-4">
+            {/* Entrada */}
+            <TransactionDialog type="income">
+              <Button 
+                size="icon" 
+                className="rounded-full bg-emerald-600 hover:bg-emerald-700 -mt-8 w-12 h-12 shadow-lg"
+              >
+                <ArrowDown className="h-5 w-5" />
+              </Button>
+            </TransactionDialog>
+
+            {/* Nova Transação */}
+            <TransactionDialog type="transaction">
               <Button 
                 size="icon" 
                 className="rounded-full bg-[#1B3047] hover:bg-[#1B3047]/90 -mt-8 w-14 h-14 shadow-lg"
               >
                 <Plus className="h-6 w-6" />
               </Button>
-            </DialogTrigger>
-            <div className="md:hidden">
-              <DialogContent className="!p-0 !rounded-t-[2rem] !rounded-b-none h-[85vh] overflow-y-auto touch-pan-y">
-                <AddTransactionForm 
-                  onAddTransaction={handleAddTransaction} 
-                  onClose={() => setIsDialogOpen(false)} 
-                />
-              </DialogContent>
-            </div>
-          </Dialog>
+            </TransactionDialog>
+
+            {/* Compra Diária */}
+            <TransactionDialog type="shopping">
+              <Button 
+                size="icon" 
+                className="rounded-full bg-orange-500 hover:bg-orange-600 -mt-8 w-12 h-12 shadow-lg"
+              >
+                <ShoppingBag className="h-5 w-5" />
+              </Button>
+            </TransactionDialog>
+          </div>
         </div>
       </nav>
 
-      {/* Desktop Add Transaction Button */}
-      <div className="hidden md:block fixed bottom-6 right-6">
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button 
-              size="lg" 
-              className="bg-[#1B3047] hover:bg-[#1B3047]/90 rounded-full shadow-lg"
-            >
-              <Plus className="h-5 w-5 mr-2" />
-              Nova Transação
-            </Button>
-          </DialogTrigger>
-          <div className="hidden md:block">
-            <DialogContent className="!p-0">
-              <AddTransactionForm 
-                onAddTransaction={handleAddTransaction} 
-                onClose={() => setIsDialogOpen(false)} 
-              />
-            </DialogContent>
-          </div>
-        </Dialog>
+      {/* Desktop Add Transaction Buttons */}
+      <div className="hidden md:flex fixed bottom-6 right-6 flex-col gap-4 z-20">
+        {/* Entrada */}
+        <TransactionDialog type="income">
+          <Button 
+            size="lg" 
+            className="bg-emerald-600 hover:bg-emerald-700 rounded-full shadow-lg"
+          >
+            <ArrowDown className="h-5 w-5 mr-2" />
+            Adicionar Entrada
+          </Button>
+        </TransactionDialog>
+
+        {/* Nova Transação */}
+        <TransactionDialog type="transaction">
+          <Button 
+            size="lg" 
+            className="bg-[#1B3047] hover:bg-[#1B3047]/90 rounded-full shadow-lg"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Nova Transação
+          </Button>
+        </TransactionDialog>
+
+        {/* Compra Diária */}
+        <TransactionDialog type="shopping">
+          <Button 
+            size="lg" 
+            className="bg-orange-500 hover:bg-orange-600 rounded-full shadow-lg"
+          >
+            <ShoppingBag className="h-5 w-5 mr-2" />
+            Registrar Compra
+          </Button>
+        </TransactionDialog>
       </div>
     </div>
   );
