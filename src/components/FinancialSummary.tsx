@@ -1,6 +1,6 @@
 import { Card } from "../components/ui/card";
 import { formatCurrency } from "../lib/utils";
-import { ArrowDownCircle, ArrowUpCircle, Wallet, AlertCircle } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Wallet } from "lucide-react";
 
 interface FinancialSummaryProps {
   income: number;
@@ -28,7 +28,7 @@ export const FinancialSummary = ({ income, expenses, debts, total }: FinancialSu
       </Card>
 
       {/* Grid de Cards Secundários */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Entradas */}
         <Card className="p-4 bg-white hover:shadow-md transition-shadow border border-[#1B3047]/10">
           <div className="flex items-center justify-between">
@@ -51,19 +51,6 @@ export const FinancialSummary = ({ income, expenses, debts, total }: FinancialSu
             </div>
             <div className="bg-destructive/10 p-2 rounded-full">
               <ArrowDownCircle className="h-6 w-6 text-destructive" />
-            </div>
-          </div>
-        </Card>
-
-        {/* Dívidas */}
-        <Card className="p-4 bg-white hover:shadow-md transition-shadow border border-[#1B3047]/10">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-[#1B3047]/60">Dívidas</p>
-              <p className="text-xl font-bold text-[#1B3047]">{formatCurrency(debts)}</p>
-            </div>
-            <div className="bg-[#1B3047]/10 p-2 rounded-full">
-              <AlertCircle className="h-6 w-6 text-[#1B3047]" />
             </div>
           </div>
         </Card>
