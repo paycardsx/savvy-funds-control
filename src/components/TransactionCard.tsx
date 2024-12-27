@@ -1,11 +1,13 @@
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
-import { formatCurrency, formatDate, calculateDaysRemaining, formatInstallments } from "../lib/utils";
+import { formatDate } from "../lib/utils";
 import { Transaction } from "../lib/types";
-import { Calendar, ArrowUpCircle, ArrowDownCircle, Clock, AlertCircle, CreditCard, Banknote } from "lucide-react";
+import { Calendar, CreditCard, Banknote } from "lucide-react";
 import { getCategoryById } from "../lib/categories";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { TransactionActions } from "./transaction/TransactionActions";
+import { TransactionIcon } from "./transaction/TransactionIcon";
+import { TransactionAmount } from "./transaction/TransactionAmount";
+import { TransactionInstallments } from "./transaction/TransactionInstallments";
 
 interface TransactionCardProps {
   transaction: Transaction;
@@ -20,50 +22,9 @@ export const TransactionCard = ({
 }: TransactionCardProps) => {
   console.log("[TransactionCard] Renderizando transação:", transaction);
 
-  const getTypeIcon = (type: string) => {
-    switch (type) {
-      case 'income':
-        return <ArrowUpCircle className="h-8 w-8 text-emerald-600" />;
-      case 'expense':
-      case 'bill':
-      case 'daily_expense':
-      case 'debt':
-        return <ArrowDownCircle className="h-8 w-8 text-destructive" />;
-      default:
-        return null;
-    }
-  };
-
-  const getTypeColor = (type: string) => {
-    switch (type) {
-      case 'income':
-        return 'text-emerald-600 font-bold';
-      case 'expense':
-      case 'bill':
-      case 'daily_expense':
-      case 'debt':
-        return 'text-destructive font-bold';
-      default:
-        return 'text-[#1B3047]/80';
-    }
-  };
-
   const getCategoryLabel = (categoryId: string) => {
     const category = getCategoryById(categoryId);
     return category?.label || categoryId;
-  };
-
-  const getDaysRemainingColor = (days: number) => {
-    if (days < 0) return "text-destructive";
-    if (days <= 7) return "text-amber-500";
-    return "text-emerald-600";
-  };
-
-  const formatDaysRemaining = (days: number) => {
-    if (days < 0) return `${Math.abs(days)} dias em atraso`;
-    if (days === 0) return "Vence hoje";
-    if (days === 1) return "Vence amanhã";
-    return `${days} dias restantes`;
   };
 
   const getPaymentMethodIcon = () => {
@@ -78,11 +39,9 @@ export const TransactionCard = ({
     return transaction.paymentMethod.type === "pix" ? "PIX" : "Cartão";
   };
 
-  const daysRemaining = calculateDaysRemaining(transaction.dueDate);
-
   console.log("[TransactionCard] Informações calculadas:", {
     category: getCategoryLabel(transaction.category),
-    daysRemaining,
+    daysRemaining: calculateDaysRemaining(transaction.dueDate),
     installments: transaction.installments,
     paymentMethod: transaction.paymentMethod
   });
@@ -92,7 +51,7 @@ export const TransactionCard = ({
       <div className="flex items-center justify-between gap-4">
         {/* Ícone da Transação */}
         <div className="hidden md:flex items-center justify-center w-12 h-12 rounded-full bg-[#1B3047]/5 group-hover:bg-[#1B3047]/10 transition-colors">
-          {getTypeIcon(transaction.type)}
+          <TransactionIcon type={transaction.type} />
         </div>
 
         {/* Informações da Transação */}
@@ -125,57 +84,18 @@ export const TransactionCard = ({
               </div>
             )}
 
-            {/* Parcelas (se houver) */}
-            {transaction.installments.total > 1 && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div className="flex items-center text-[#1B3047]/60">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span>
-                        {formatInstallments(
-                          transaction.installments.current,
-                          transaction.installments.total,
-                          transaction.installments.period
-                        )}
-                      </span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>
-                      Pagamento {transaction.installments.period === "monthly" ? "mensal" : "anual"}
-                      <br />
-                      Vencimento: {formatDate(transaction.dueDate)}
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-
-            {/* Dias Restantes */}
-            {transaction.type !== "income" && transaction.type !== "daily_expense" && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div className={`flex items-center ${getDaysRemainingColor(daysRemaining)}`}>
-                      <AlertCircle className="h-4 w-4 mr-1" />
-                      <span>{formatDaysRemaining(daysRemaining)}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Vencimento: {formatDate(transaction.dueDate)}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
+            {/* Parcelas e Status */}
+            <TransactionInstallments
+              installments={transaction.installments}
+              dueDate={transaction.dueDate}
+              type={transaction.type}
+            />
           </div>
         </div>
 
         {/* Valor e Ações */}
         <div className="flex flex-col items-end gap-2">
-          <span className={`text-lg ${getTypeColor(transaction.type)}`}>
-            {transaction.type === 'income' ? '+' : '-'} {formatCurrency(transaction.amount)}
-          </span>
+          <TransactionAmount type={transaction.type} amount={transaction.amount} />
           
           <TransactionActions
             transaction={transaction}
@@ -216,9 +136,9 @@ export const TransactionCard = ({
           )}
         </div>
         {transaction.type !== "income" && transaction.type !== "daily_expense" && (
-          <div className={`flex items-center gap-1 mt-1 ${getDaysRemainingColor(daysRemaining)}`}>
+          <div className={`flex items-center gap-1 mt-1 ${getDaysRemainingColor(calculateDaysRemaining(transaction.dueDate))}`}>
             <AlertCircle className="h-4 w-4" />
-            <span>{formatDaysRemaining(daysRemaining)}</span>
+            <span>{formatDaysRemaining(calculateDaysRemaining(transaction.dueDate))}</span>
           </div>
         )}
       </div>
