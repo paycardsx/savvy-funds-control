@@ -104,6 +104,19 @@ export const TransactionList = ({
     }
   };
 
+  const handlePayInstallment = (transaction: Transaction) => {
+    if (onUpdateTransaction) {
+      const updatedTransaction = {
+        ...transaction,
+        installments: {
+          ...transaction.installments,
+          current: transaction.installments.current + 1
+        }
+      };
+      onUpdateTransaction(updatedTransaction);
+    }
+  };
+
   return (
     <div className="space-y-4 p-4 bg-white rounded-lg shadow-md">
       {/* Cabeçalho com Título e Contagem */}
@@ -165,6 +178,7 @@ export const TransactionList = ({
               transaction={transaction}
               onEdit={handleEdit}
               onDelete={handleDelete}
+              onPayInstallment={handlePayInstallment}
             />
           ))
         ) : (

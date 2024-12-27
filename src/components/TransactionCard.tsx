@@ -1,25 +1,30 @@
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import { formatDate } from "../lib/utils";
 import { Transaction } from "../lib/types";
-import { Calendar, CreditCard, Banknote, Clock, AlertCircle } from "lucide-react";
+import { Calendar, CreditCard, Banknote } from "lucide-react";
 import { getCategoryById } from "../lib/categories";
 import { TransactionActions } from "./transaction/TransactionActions";
 import { TransactionIcon } from "./transaction/TransactionIcon";
 import { TransactionAmount } from "./transaction/TransactionAmount";
 import { TransactionInstallments } from "./transaction/TransactionInstallments";
+import { useToast } from "./ui/use-toast";
 
 interface TransactionCardProps {
   transaction: Transaction;
   onEdit?: (transaction: Transaction) => void;
   onDelete?: (transaction: Transaction) => void;
+  onPayInstallment?: (transaction: Transaction) => void;
 }
 
 export const TransactionCard = ({ 
   transaction,
   onEdit = () => {},
-  onDelete = () => {}
+  onDelete = () => {},
+  onPayInstallment = () => {}
 }: TransactionCardProps) => {
+  const { toast } = useToast();
   console.log("[TransactionCard] Renderizando transação:", transaction);
 
   const getCategoryLabel = (categoryId: string) => {
@@ -38,6 +43,19 @@ export const TransactionCard = ({
     if (!transaction.paymentMethod) return "";
     return transaction.paymentMethod.type === "pix" ? "PIX" : "Cartão";
   };
+
+  const handlePayInstallment = () => {
+    onPayInstallment(transaction);
+    toast({
+      title: "Parcela paga com sucesso!",
+      description: `Parcela ${transaction.installments.current} de ${transaction.installments.total} foi registrada como paga.`,
+    });
+  };
+
+  const showPayButton = transaction.type !== "income" && 
+                       transaction.type !== "daily_expense" && 
+                       transaction.installments.total > 1 &&
+                       transaction.installments.current <= transaction.installments.total;
 
   console.log("[TransactionCard] Informações calculadas:", {
     category: getCategoryLabel(transaction.category),
@@ -92,10 +110,21 @@ export const TransactionCard = ({
           </div>
         </div>
 
-        {/* Valor e Ações */}
+        {/* Valor, Botão de Pagamento e Ações */}
         <div className="flex flex-col items-end gap-2">
           <TransactionAmount type={transaction.type} amount={transaction.amount} />
           
+          {showPayButton && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handlePayInstallment}
+              className="text-emerald-600 border-emerald-600 hover:bg-emerald-50"
+            >
+              Pagar Parcela
+            </Button>
+          )}
+
           <TransactionActions
             transaction={transaction}
             onEdit={onEdit}
