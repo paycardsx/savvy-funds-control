@@ -12,6 +12,7 @@ interface AddTransactionFormProps {
   defaultType?: TransactionType;
   availableTypes?: TransactionType[];
   simpleForm?: boolean;
+  defaultValues?: Transaction;
 }
 
 export const AddTransactionForm = ({ 
@@ -19,21 +20,41 @@ export const AddTransactionForm = ({
   onClose,
   defaultType = "expense",
   availableTypes = ["expense", "income", "daily_expense", "bill", "debt"],
-  simpleForm = false
+  simpleForm = false,
+  defaultValues
 }: AddTransactionFormProps) => {
   const today = getLocalDate();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<Partial<Transaction>>({
-    type: defaultType,
-    date: today,
-    dueDate: today,
-    installments: {
-      total: 1,
-      current: 1,
-      period: "monthly"
+  const [formData, setFormData] = useState<Partial<Transaction>>(() => {
+    if (defaultValues) {
+      return {
+        ...defaultValues,
+        installments: defaultValues.installments || {
+          total: 1,
+          current: 1,
+          period: "monthly"
+        }
+      };
     }
+    
+    return {
+      type: defaultType,
+      date: today,
+      dueDate: today,
+      installments: {
+        total: 1,
+        current: 1,
+        period: "monthly"
+      }
+    };
   });
+
+  useEffect(() => {
+    if (defaultValues) {
+      setFormData(defaultValues);
+    }
+  }, [defaultValues]);
 
   // Reset o passo quando o tipo muda
   useEffect(() => {

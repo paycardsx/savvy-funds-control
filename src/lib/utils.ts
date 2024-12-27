@@ -123,3 +123,106 @@ export function calculateTotals(transactions: Transaction[]) {
     total: 0
   });
 }
+
+export function calculateInstallmentDueDate(
+  startDate: string,
+  installmentNumber: number,
+  period: "monthly" | "yearly"
+): string {
+  const [year, month, day] = startDate.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+
+  if (period === "monthly") {
+    date.setMonth(date.getMonth() + (installmentNumber - 1));
+  } else {
+    date.setFullYear(date.getFullYear() + (installmentNumber - 1));
+  }
+
+  return date.toISOString().split('T')[0];
+}
+
+export function getInstallmentStatus(
+  startDate: string,
+  currentInstallment: number,
+  totalInstallments: number,
+  period: "monthly" | "yearly"
+) {
+  // Usar data atual real para cálculos
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const installments = Array.from({ length: totalInstallments }, (_, i) => {
+    const installmentNumber = i + 1;
+    const dueDate = calculateInstallmentDueDate(startDate, installmentNumber, period);
+    const dueDateTime = new Date(dueDate);
+    
+    // Uma parcela está atrasada se:
+    // 1. A data de vencimento já passou E
+    // 2. A parcela ainda não foi paga (número da parcela >= parcela atual)
+    const isOverdue = dueDateTime < today && installmentNumber >= currentInstallment;
+    
+    return {
+      number: installmentNumber,
+      dueDate,
+      isPaid: installmentNumber < currentInstallment,
+      isCurrentInstallment: installmentNumber === currentInstallment,
+      isOverdue,
+      daysOverdue: isOverdue ? 
+        Math.ceil((today.getTime() - dueDateTime.getTime()) / (1000 * 60 * 60 * 24)) : 0,
+      daysRemaining: Math.ceil(
+        (dueDateTime.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)
+      )
+    };
+  });
+
+  // Encontrar parcelas atrasadas (não pagas e com data vencida)
+  const overdueInstallments = installments.filter(i => i.isOverdue);
+  
+  // Encontrar a próxima parcela a ser paga
+  const nextInstallmentData = installments[currentInstallment - 1];
+
+  return {
+    installments,
+    currentInstallment: nextInstallmentData,
+    overdueInstallments,
+    hasOverdue: overdueInstallments.length > 0,
+    totalPaid: currentInstallment - 1,
+    totalRemaining: totalInstallments - (currentInstallment - 1),
+    oldestOverdueDate: overdueInstallments.length > 0 ? 
+      overdueInstallments[0].dueDate : null,
+    maxDaysOverdue: overdueInstallments.length > 0 ?
+      Math.max(...overdueInstallments.map(i => i.daysOverdue)) : 0
+  };
+}
+
+// Função de teste para validar
+function testWithCurrentDate() {
+  const startDate = "2024-10-10";  // Data inicial
+  const currentDate = new Date("2024-12-27"); // Simulando hoje como 27/12/2024
+  const currentInstallment = 1;    // Ainda na primeira parcela
+  const totalInstallments = 12;    // 12 parcelas no total
+  const period = "monthly" as const;
+
+  // Sobrescrever temporariamente Date.now() para teste
+  const originalNow = Date.now;
+  Date.now = () => currentDate.getTime();
+
+  const status = getInstallmentStatus(startDate, currentInstallment, totalInstallments, period);
+
+  // Restaurar Date.now
+  Date.now = originalNow;
+
+  console.log("Status em 27/12/2024:", {
+    parcelasAtrasadas: status.overdueInstallments.length,
+    diasDeAtraso: status.maxDaysOverdue,
+    parcelaAtual: status.currentInstallment,
+    detalheParcelas: status.installments.map(i => ({
+      numero: i.number,
+      vencimento: i.dueDate,
+      atrasada: i.isOverdue,
+      diasAtraso: i.daysOverdue
+    }))
+  });
+
+  return status;
+}

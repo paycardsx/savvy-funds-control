@@ -25,6 +25,8 @@ const Index = () => {
     return [];
   });
   const [activeDialog, setActiveDialog] = useState<DialogType>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   // Atualiza o localStorage sempre que as transações mudarem
   useEffect(() => {
@@ -78,10 +80,16 @@ const Index = () => {
           defaultType={type === "income" ? "income" : type === "shopping" ? "daily_expense" : "expense"}
           availableTypes={type === "income" ? ["income"] : type === "shopping" ? ["daily_expense"] : ["expense", "bill", "debt"]}
           simpleForm={type !== "transaction"}
+          defaultValues={editingTransaction || undefined}
         />
       </DialogContent>
     </Dialog>
   );
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+    setShowForm(true);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -108,7 +116,8 @@ const Index = () => {
 
 <TransactionList 
   transactions={transactions} 
-  onDeleteTransaction={(id) => setTransactions(transactions.filter(transaction => transaction.id !== id))}
+  onEdit={handleEdit}
+  onDelete={(id) => setTransactions(transactions.filter(transaction => transaction.id !== id))}
 />
         </div>
       </main>

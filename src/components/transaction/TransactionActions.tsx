@@ -1,76 +1,83 @@
-import { Pencil, Trash2 } from "lucide-react";
-import { Button } from "../ui/button";
+import { useState } from "react";
+import { MoreVertical, Trash2, Eye } from "lucide-react";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "../ui/alert-dialog";
-import { Transaction } from "@/lib/types";
-import { useToast } from "@/hooks/use-toast";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
+import { Button } from "../ui/button";
+import { DeleteTransactionDialog } from "./DeleteTransactionDialog";
+import { ViewTransactionDialog } from "./ViewTransactionDialog";
+import { Transaction } from "../../lib/types";
 
 interface TransactionActionsProps {
   transaction: Transaction;
-  onEdit: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
 }
 
-export const TransactionActions = ({ 
-  transaction, 
-  onEdit, 
-  onDelete 
+export const TransactionActions = ({
+  transaction,
+  onDelete,
 }: TransactionActionsProps) => {
-  const { toast } = useToast();
-
-  const handleDelete = () => {
-    onDelete(transaction);
-    toast({
-      title: "Transação excluída",
-      description: "A transação foi removida com sucesso.",
-    });
-  };
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showViewDialog, setShowViewDialog] = useState(false);
 
   return (
-    <div className="flex items-center gap-2">
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 text-[#1B3047]/60 hover:text-[#1B3047] hover:bg-[#1B3047]/5"
-        onClick={() => onEdit(transaction)}
-      >
-        <Pencil className="h-4 w-4" />
-      </Button>
-
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-destructive/60 hover:text-destructive hover:bg-destructive/5"
+            className="h-8 w-8 p-0 rounded-lg text-[#1B3047] 
+                     hover:bg-[#1B3047]/5 transition-colors"
           >
-            <Trash2 className="h-4 w-4" />
+            <MoreVertical className="h-4 w-4" />
           </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Excluir transação</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir esta transação? Esta ação não pode ser desfeita.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Excluir
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent 
+          align="end"
+          className="min-w-[140px] p-1 rounded-lg bg-white shadow-md border-[#1B3047]/10"
+        >
+          <DropdownMenuItem
+            onClick={() => setShowViewDialog(true)}
+            className="flex items-center h-9 px-2.5 text-sm rounded-md
+                     text-[#1B3047] font-medium hover:bg-[#1B3047]/5 
+                     transition-colors cursor-pointer"
+          >
+            <Eye className="mr-2 h-4 w-4" />
+            Ver mais
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setShowDeleteDialog(true)}
+            className="flex items-center h-9 px-2.5 text-sm rounded-md
+                     text-[#1B3047] font-medium hover:bg-destructive/5
+                     hover:text-destructive transition-colors cursor-pointer"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Excluir
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ViewTransactionDialog
+        transaction={transaction}
+        open={showViewDialog}
+        onClose={() => setShowViewDialog(false)}
+        onPayInstallment={(t) => {
+          // Lógica para processar o pagamento
+          console.log("Processando pagamento da parcela:", t);
+        }}
+      />
+
+      <DeleteTransactionDialog
+        open={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={() => {
+          onDelete(transaction);
+          setShowDeleteDialog(false);
+        }}
+      />
+    </>
   );
 };

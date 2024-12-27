@@ -13,13 +13,15 @@ interface BasicInfoStepProps {
   defaultType?: TransactionType;
   availableTypes?: TransactionType[];
   simpleForm?: boolean;
+  defaultValues?: Partial<Transaction>;
 }
 
 export const BasicInfoStep = ({ 
   onDataChange, 
   defaultType = "expense",
   availableTypes = ["expense", "income", "daily_expense", "bill", "debt"],
-  simpleForm = false
+  simpleForm = false,
+  defaultValues
 }: BasicInfoStepProps) => {
   const today = getLocalDate();
   

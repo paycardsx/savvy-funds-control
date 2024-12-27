@@ -38,4 +38,5 @@ export interface Transaction {
   };
   category: string;
   paymentMethod?: PaymentMethod;
+  notes?: string;
 }

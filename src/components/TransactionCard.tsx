@@ -19,6 +19,10 @@ export const TransactionCard = ({
   onDelete = () => {}
 }: TransactionCardProps) => {
   console.log("[TransactionCard] Renderizando transação:", transaction);
+  console.log("[TransactionCard] Handlers de edição e deleção:", { 
+    hasEditHandler: typeof onEdit === 'function',
+    hasDeleteHandler: typeof onDelete === 'function'
+  });
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -179,8 +183,10 @@ export const TransactionCard = ({
           
           <TransactionActions
             transaction={transaction}
-            onEdit={onEdit}
-            onDelete={onDelete}
+            onDelete={(t) => {
+              console.log("[TransactionCard] Iniciando deleção da transação:", t);
+              onDelete(t);
+            }}
           />
           
           {/* Status em Mobile */}

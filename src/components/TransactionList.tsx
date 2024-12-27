@@ -11,14 +11,14 @@ import { AddTransactionForm } from "./AddTransactionForm";
 
 interface TransactionListProps {
   transactions: Transaction[];
-  onDeleteTransaction?: (id: string) => void;
-  onUpdateTransaction?: (transaction: Transaction) => void;
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (id: string) => void;
 }
 
 export const TransactionList = ({ 
   transactions,
-  onDeleteTransaction,
-  onUpdateTransaction
+  onEdit,
+  onDelete
 }: TransactionListProps) => {
   const now = new Date();
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
@@ -89,14 +89,14 @@ export const TransactionList = ({
   };
 
   const handleDelete = (transaction: Transaction) => {
-    if (onDeleteTransaction) {
-      onDeleteTransaction(transaction.id);
+    if (onDelete) {
+      onDelete(transaction.id);
     }
   };
 
   const handleUpdate = (updatedTransaction: Omit<Transaction, 'id'>) => {
-    if (editingTransaction && onUpdateTransaction) {
-      onUpdateTransaction({
+    if (editingTransaction && onEdit) {
+      onEdit({
         ...updatedTransaction,
         id: editingTransaction.id
       });
