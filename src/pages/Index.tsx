@@ -88,7 +88,7 @@ const Index = () => {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-10">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-[#1B3047]">PromptPay</h1>
+<img src="/public/promptpay.png" alt="Logo" className="h-10" />
           <Button variant="ghost" className="gap-2 text-[#1B3047] hover:bg-[#1B3047]/5">
             <Home className="h-5 w-5" />
             Início
@@ -106,7 +106,10 @@ const Index = () => {
             total={totals.total}
           />
 
-          <TransactionList transactions={transactions} />
+<TransactionList 
+  transactions={transactions} 
+  onDeleteTransaction={(id) => setTransactions(transactions.filter(transaction => transaction.id !== id))}
+/>
         </div>
       </main>
 
