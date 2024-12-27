@@ -94,12 +94,9 @@ export const TransactionList = ({
     }
   };
 
-  const handleUpdate = (updatedTransaction: Omit<Transaction, 'id'>) => {
-    if (editingTransaction && onUpdateTransaction) {
-      onUpdateTransaction({
-        ...updatedTransaction,
-        id: editingTransaction.id
-      });
+  const handleUpdate = (updatedTransaction: Transaction) => {
+    if (onUpdateTransaction) {
+      onUpdateTransaction(updatedTransaction);
       setEditingTransaction(null);
     }
   };
@@ -179,9 +176,9 @@ export const TransactionList = ({
         <DialogContent className="p-0">
           {editingTransaction && (
             <AddTransactionForm
-              onAddTransaction={handleUpdate}
+              initialData={editingTransaction}
+              onSubmit={handleUpdate}
               onClose={() => setEditingTransaction(null)}
-              defaultValues={editingTransaction}
             />
           )}
         </DialogContent>
