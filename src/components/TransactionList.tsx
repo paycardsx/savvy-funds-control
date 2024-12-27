@@ -181,7 +181,7 @@ export const TransactionList = ({
             <AddTransactionForm
               onAddTransaction={handleUpdate}
               onClose={() => setEditingTransaction(null)}
-              defaultValues={editingTransaction}
+              initialData={editingTransaction}
             />
           )}
         </DialogContent>

@@ -2,7 +2,7 @@ import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
 import { formatDate } from "../lib/utils";
 import { Transaction } from "../lib/types";
-import { Calendar, CreditCard, Banknote } from "lucide-react";
+import { Calendar, CreditCard, Banknote, Clock, AlertCircle } from "lucide-react";
 import { getCategoryById } from "../lib/categories";
 import { TransactionActions } from "./transaction/TransactionActions";
 import { TransactionIcon } from "./transaction/TransactionIcon";
@@ -41,7 +41,6 @@ export const TransactionCard = ({
 
   console.log("[TransactionCard] Informações calculadas:", {
     category: getCategoryLabel(transaction.category),
-    daysRemaining: calculateDaysRemaining(transaction.dueDate),
     installments: transaction.installments,
     paymentMethod: transaction.paymentMethod
   });
@@ -113,34 +112,6 @@ export const TransactionCard = ({
             </Badge>
           </div>
         </div>
-      </div>
-
-      {/* Informações Adicionais em Mobile */}
-      <div className="md:hidden mt-2 pt-2 border-t border-[#1B3047]/10">
-        <div className="flex items-center justify-between text-sm text-[#1B3047]/60">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4" />
-            <span>{formatDate(transaction.date)}</span>
-          </div>
-          {transaction.installments.total > 1 && (
-            <div className="flex items-center gap-1">
-              <Clock className="h-4 w-4" />
-              <span>
-                {formatInstallments(
-                  transaction.installments.current,
-                  transaction.installments.total,
-                  transaction.installments.period
-                )}
-              </span>
-            </div>
-          )}
-        </div>
-        {transaction.type !== "income" && transaction.type !== "daily_expense" && (
-          <div className={`flex items-center gap-1 mt-1 ${getDaysRemainingColor(calculateDaysRemaining(transaction.dueDate))}`}>
-            <AlertCircle className="h-4 w-4" />
-            <span>{formatDaysRemaining(calculateDaysRemaining(transaction.dueDate))}</span>
-          </div>
-        )}
       </div>
     </Card>
   );
