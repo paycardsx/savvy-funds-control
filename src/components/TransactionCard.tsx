@@ -5,12 +5,19 @@ import { Transaction } from "../lib/types";
 import { Calendar, ArrowUpCircle, ArrowDownCircle, Clock, AlertCircle, CreditCard, Banknote } from "lucide-react";
 import { getCategoryById } from "../lib/categories";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
+import { TransactionActions } from "./transaction/TransactionActions";
 
 interface TransactionCardProps {
   transaction: Transaction;
+  onEdit?: (transaction: Transaction) => void;
+  onDelete?: (transaction: Transaction) => void;
 }
 
-export const TransactionCard = ({ transaction }: TransactionCardProps) => {
+export const TransactionCard = ({ 
+  transaction,
+  onEdit = () => {},
+  onDelete = () => {}
+}: TransactionCardProps) => {
   console.log("[TransactionCard] Renderizando transação:", transaction);
 
   const getTypeIcon = (type: string) => {
@@ -164,11 +171,17 @@ export const TransactionCard = ({ transaction }: TransactionCardProps) => {
           </div>
         </div>
 
-        {/* Valor */}
-        <div className="text-right">
+        {/* Valor e Ações */}
+        <div className="flex flex-col items-end gap-2">
           <span className={`text-lg ${getTypeColor(transaction.type)}`}>
             {transaction.type === 'income' ? '+' : '-'} {formatCurrency(transaction.amount)}
           </span>
+          
+          <TransactionActions
+            transaction={transaction}
+            onEdit={onEdit}
+            onDelete={onDelete}
+          />
           
           {/* Status em Mobile */}
           <div className="md:hidden mt-1">

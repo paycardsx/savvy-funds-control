@@ -6,12 +6,20 @@ import { Search, Calendar } from "lucide-react";
 import { Card } from "../components/ui/card";
 import { TransactionFilters } from "./TransactionFilters";
 import { getCategoryById } from "../lib/categories";
+import { Dialog, DialogContent } from "./ui/dialog";
+import { AddTransactionForm } from "./AddTransactionForm";
 
 interface TransactionListProps {
   transactions: Transaction[];
+  onDeleteTransaction?: (id: string) => void;
+  onUpdateTransaction?: (transaction: Transaction) => void;
 }
 
-export const TransactionList = ({ transactions }: TransactionListProps) => {
+export const TransactionList = ({ 
+  transactions,
+  onDeleteTransaction,
+  onUpdateTransaction
+}: TransactionListProps) => {
   const now = new Date();
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
   const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
@@ -23,6 +31,7 @@ export const TransactionList = ({ transactions }: TransactionListProps) => {
     type?: TransactionType;
     category?: string;
   }>({});
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
   // Log quando as transações mudam
   useEffect(() => {
@@ -74,6 +83,26 @@ export const TransactionList = ({ transactions }: TransactionListProps) => {
   useEffect(() => {
     console.log("Transações filtradas:", filteredTransactions);
   }, [filteredTransactions]);
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
+  };
+
+  const handleDelete = (transaction: Transaction) => {
+    if (onDeleteTransaction) {
+      onDeleteTransaction(transaction.id);
+    }
+  };
+
+  const handleUpdate = (updatedTransaction: Omit<Transaction, 'id'>) => {
+    if (editingTransaction && onUpdateTransaction) {
+      onUpdateTransaction({
+        ...updatedTransaction,
+        id: editingTransaction.id
+      });
+      setEditingTransaction(null);
+    }
+  };
 
   return (
     <div className="space-y-4 p-4 bg-white rounded-lg shadow-md">
@@ -131,7 +160,12 @@ export const TransactionList = ({ transactions }: TransactionListProps) => {
       <div className="space-y-3">
         {filteredTransactions.length > 0 ? (
           filteredTransactions.map((transaction) => (
-            <TransactionCard key={transaction.id} transaction={transaction} />
+            <TransactionCard
+              key={transaction.id}
+              transaction={transaction}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
           ))
         ) : (
           <div className="text-center py-8 text-[#1B3047]/40">
@@ -139,6 +173,19 @@ export const TransactionList = ({ transactions }: TransactionListProps) => {
           </div>
         )}
       </div>
+
+      {/* Dialog de Edição */}
+      <Dialog open={!!editingTransaction} onOpenChange={(open) => !open && setEditingTransaction(null)}>
+        <DialogContent className="p-0">
+          {editingTransaction && (
+            <AddTransactionForm
+              onAddTransaction={handleUpdate}
+              onClose={() => setEditingTransaction(null)}
+              defaultValues={editingTransaction}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
